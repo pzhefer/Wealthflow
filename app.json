@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "WealthFlow",
+    "slug": "wealthflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "wealthflow",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "extra": {
+      "supabaseUrl": "https://erwmioveetwzmtrxaowj.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyd21pb3ZlZXR3em10cnhhb3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNjE2NjgsImV4cCI6MjA3OTYzNzY2OH0.yFDTHVMjDXhtXz5LfqQO74GNDpFhpTuQnnVKWgPaAI0"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

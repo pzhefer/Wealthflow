@@ -1,0 +1,1348 @@
+# 📋 WealthFlow Implementation Checklist
+
+**Last Updated:** November 26, 2025
+**Total Features:** 50+ across 6 phases
+**Estimated Total Time:** 150-200 hours
+
+---
+
+## 🔴 **PHASE 0: CRITICAL FEATURES (Priority P0)**
+**Timeline:** 8-10 weeks | **Effort:** 35-45 hours
+**Goal:** Achieve feature parity with YNAB, Quicken, Lunch Money
+
+---
+
+### **Feature 0.1: Split Transactions** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** Medium | **Time:** 2-3 hours
+
+#### Database Setup
+- [ ] Verify `transaction_splits` table exists (already created!)
+- [ ] Add RLS policies for transaction splits
+- [ ] Test split creation and deletion
+
+#### Backend Logic
+- [ ] Create function to validate splits sum equals transaction total
+- [ ] Create function to save/update splits
+- [ ] Create function to delete splits with transaction
+- [ ] Create function to fetch splits for transaction
+
+#### UI Components
+- [ ] Add "Split Transaction" toggle to transaction form
+- [ ] Create split entry interface
+  - [ ] Category dropdown for each split
+  - [ ] Amount input for each split
+  - [ ] Notes field for each split
+  - [ ] Add/remove split buttons
+  - [ ] Running total display
+  - [ ] Validation message
+- [ ] Add split indicator icon to transaction list
+- [ ] Create expandable split details view
+- [ ] Update transaction card to show split badge
+
+#### Reports Integration
+- [ ] Update category reports to aggregate splits
+- [ ] Update spending by category chart
+- [ ] Show split breakdown in transaction details
+- [ ] Update budget calculations to include splits
+
+#### Testing
+- [ ] Test creating split transaction
+- [ ] Test editing split transaction
+- [ ] Test deleting split transaction
+- [ ] Test that splits sum validation works
+- [ ] Test category reports with splits
+- [ ] Test budget calculations with splits
+
+---
+
+### **Feature 0.2: Recurring Transactions** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `recurring_transactions` table
+  ```sql
+  - id, user_id, name, amount, type
+  - category_id, account_id, to_account_id, merchant_id
+  - frequency, interval_count, day_of_week, day_of_month
+  - start_date, end_date, next_due_date, last_created_date
+  - auto_create, is_active, notes
+  ```
+- [ ] Add RLS policies for recurring transactions
+- [ ] Create indexes for performance
+- [ ] Add migration file
+
+#### Backend Functions
+- [ ] Create function to calculate next_due_date
+- [ ] Create function to check for due recurring items
+- [ ] Create function to create transaction from recurring template
+- [ ] Create function to update next_due_date after creation
+
+#### Edge Function (Cron Job)
+- [ ] Create Supabase Edge Function: `recurring-transactions-processor`
+- [ ] Implement logic to find due items
+- [ ] Implement auto-create if enabled
+- [ ] Send notification for created transactions
+- [ ] Handle errors gracefully
+- [ ] Set up daily cron schedule (Supabase Cron)
+
+#### Recurring Manager UI
+- [ ] Create "Recurring Transactions" screen
+- [ ] List all recurring items
+- [ ] Add filters (active, paused, expired)
+- [ ] Create "Add Recurring" form
+  - [ ] Name input
+  - [ ] Amount input
+  - [ ] Type selector (income/expense/transfer)
+  - [ ] Category dropdown
+  - [ ] Account dropdown
+  - [ ] Frequency selector (daily/weekly/monthly/yearly)
+  - [ ] Interval count (every X periods)
+  - [ ] Day selector (day of week or month)
+  - [ ] Start date picker
+  - [ ] End date picker (optional)
+  - [ ] Auto-create toggle
+  - [ ] Notes field
+- [ ] Create edit/delete actions
+- [ ] Add "Create Now" button to manually trigger
+- [ ] Show next occurrence date
+- [ ] Add preview of next 3 occurrences
+
+#### Integration with Transactions
+- [ ] Add "Mark as recurring" option in transaction form
+- [ ] Link created transactions to recurring template
+- [ ] Show recurring badge on transactions
+
+#### Testing
+- [ ] Test creating recurring transaction
+- [ ] Test daily frequency calculation
+- [ ] Test weekly frequency calculation
+- [ ] Test monthly frequency calculation
+- [ ] Test yearly frequency calculation
+- [ ] Test auto-create functionality
+- [ ] Test manual trigger
+- [ ] Test pause/resume
+- [ ] Test deletion
+- [ ] Test end date handling
+
+---
+
+### **Feature 0.3: Document Vault** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `documents` table
+  ```sql
+  - id, user_id, name, description, category
+  - file_path, file_size, mime_type, tags
+  - transaction_id, account_id, goal_id
+  - created_at, updated_at
+  ```
+- [ ] Add RLS policies for documents
+- [ ] Create indexes (user_id, category, tags with GIN)
+- [ ] Add migration file
+
+#### Supabase Storage Setup
+- [ ] Create "documents" storage bucket
+- [ ] Set up RLS policies for bucket
+  - [ ] Users can only access their own files
+  - [ ] Max file size: 10MB per file
+  - [ ] Allowed MIME types: PDF, images, docs
+- [ ] Configure bucket settings
+
+#### Upload Functionality
+- [ ] Install expo-document-picker
+- [ ] Install expo-image-picker (for receipts)
+- [ ] Create document upload component
+- [ ] Handle file selection
+- [ ] Validate file size and type
+- [ ] Upload to Supabase Storage
+- [ ] Save metadata to documents table
+- [ ] Show upload progress
+- [ ] Handle upload errors
+
+#### Document Vault UI
+- [ ] Create "Documents" screen
+- [ ] Grid/list view toggle
+- [ ] Category filter
+- [ ] Search by name/tags
+- [ ] Sort options (date, name, size)
+- [ ] Document card with thumbnail
+  - [ ] Show name, category, date
+  - [ ] Show file size
+  - [ ] Show tags
+  - [ ] Preview button
+  - [ ] Download button
+  - [ ] Delete button
+- [ ] Create "Add Document" button
+- [ ] Create upload form
+  - [ ] Name input
+  - [ ] Description input
+  - [ ] Category dropdown
+  - [ ] Tags input (comma-separated)
+  - [ ] Link to transaction/account/goal
+  - [ ] File picker button
+  - [ ] Camera button (for receipts)
+- [ ] Document preview modal
+  - [ ] Image preview
+  - [ ] PDF viewer (react-native-pdf)
+  - [ ] Document info
+  - [ ] Edit/delete actions
+
+#### Integration with Other Features
+- [ ] Add "Attach Receipt" button to transaction form
+- [ ] Show document count badge on transactions
+- [ ] Add "Documents" tab to account details
+- [ ] Add "Documents" tab to goal details
+- [ ] Show linked documents in respective screens
+
+#### Testing
+- [ ] Test document upload (image)
+- [ ] Test document upload (PDF)
+- [ ] Test file size validation
+- [ ] Test camera capture for receipt
+- [ ] Test document preview
+- [ ] Test document download
+- [ ] Test document deletion
+- [ ] Test search functionality
+- [ ] Test category filtering
+- [ ] Test linking to transaction
+- [ ] Test RLS policies (can't access other users' docs)
+
+---
+
+### **Feature 0.4: Multi-Currency Support** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** High | **Time:** 4-5 hours
+
+#### Database Setup
+- [ ] Create `currencies` table
+  ```sql
+  - code (PK), name, symbol, decimal_places
+  ```
+- [ ] Pre-populate with major currencies
+  - [ ] USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, INR, MXN
+  - [ ] BRL, RUB, KRW, ZAR, SGD, HKD, SEK, NOK, DKK, PLN
+- [ ] Create `exchange_rates` table
+  ```sql
+  - id, from_currency, to_currency, rate
+  - date, source, created_at
+  - UNIQUE(from_currency, to_currency, date)
+  ```
+- [ ] Add `currency` column to `accounts` table (default 'USD')
+- [ ] Add `primary_currency` to `user_profiles` table
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### Exchange Rate API Integration
+- [ ] Sign up for exchangerate-api.com (free tier)
+- [ ] Store API key in Supabase secrets
+- [ ] Create Edge Function: `update-exchange-rates`
+- [ ] Implement rate fetching logic
+- [ ] Store rates in exchange_rates table
+- [ ] Set up daily cron job
+- [ ] Add fallback to previous rates if API fails
+- [ ] Log errors
+
+#### Currency Conversion Logic
+- [ ] Create helper function: convertCurrency(amount, from, to, date)
+- [ ] Fetch appropriate exchange rate
+- [ ] Handle same-currency (no conversion)
+- [ ] Handle missing rates (use closest date)
+- [ ] Cache conversion results
+
+#### UI Updates - Settings
+- [ ] Add "Primary Currency" setting in user profile
+- [ ] Currency selector dropdown
+- [ ] Show current primary currency
+- [ ] Update on selection
+
+#### UI Updates - Accounts
+- [ ] Add currency selector to account form
+- [ ] Show currency next to account balance
+- [ ] Display native currency in account list
+- [ ] Show converted value in parentheses
+
+#### UI Updates - Transactions
+- [ ] Add currency selector to transaction form
+- [ ] Default to account's currency
+- [ ] Show amount in native currency
+- [ ] Show converted amount if different
+
+#### UI Updates - Dashboard
+- [ ] Convert all balances to primary currency
+- [ ] Show total net worth in primary currency
+- [ ] Add currency indicator
+- [ ] Show exchange rate used (hover/info icon)
+
+#### UI Updates - Reports
+- [ ] Convert all values to primary currency
+- [ ] Add currency legend
+- [ ] Show original currency in tooltips
+
+#### UI Updates - Budgets
+- [ ] Set budget in primary currency
+- [ ] Convert spending from all currencies
+- [ ] Show variance in primary currency
+
+#### Currency Display Component
+- [ ] Create reusable CurrencyDisplay component
+- [ ] Props: amount, currency, showConverted, showSymbol
+- [ ] Handle formatting (decimals, symbols)
+- [ ] Handle different number formats (1,000.00 vs 1.000,00)
+
+#### Testing
+- [ ] Test currency conversion calculations
+- [ ] Test exchange rate fetching
+- [ ] Test account with USD
+- [ ] Test account with EUR
+- [ ] Test account with JPY (0 decimal places)
+- [ ] Test transaction with multi-currency
+- [ ] Test net worth calculation with multi-currency
+- [ ] Test budget with multi-currency spending
+- [ ] Test reports with multi-currency
+- [ ] Test edge cases (missing rates, API failure)
+
+---
+
+### **Feature 0.5: Budget Rollover & Alerts** ⭐⭐
+**Priority:** P0 | **Complexity:** Low | **Time:** 1-2 hours
+
+#### Database Setup
+- [ ] Add columns to `budgets` table
+  - [ ] alert_threshold (numeric, default 90)
+  - [ ] rollover_enabled (boolean, default false)
+  - [ ] rollover_percentage (numeric, default 100)
+  - [ ] previous_rollover (numeric, default 0)
+- [ ] Add migration file
+
+#### Backend Logic
+- [ ] Create function: calculateBudgetStatus(budget_id)
+  - [ ] Get budget limit
+  - [ ] Get spent amount
+  - [ ] Add previous rollover
+  - [ ] Calculate percentage used
+  - [ ] Determine alert level
+- [ ] Create function: calculateRollover(budget_id, month)
+  - [ ] Get unspent amount
+  - [ ] Apply rollover percentage
+  - [ ] Return rollover amount
+- [ ] Create Edge Function: `process-budget-rollovers` (monthly cron)
+  - [ ] Find all active budgets with rollover enabled
+  - [ ] Calculate rollover for previous month
+  - [ ] Update previous_rollover for current month
+  - [ ] Log results
+
+#### UI Updates - Budget Form
+- [ ] Add "Alert Threshold" slider (50%, 75%, 90%, 100%, 110%)
+- [ ] Add "Enable Rollover" toggle
+- [ ] Add "Rollover Percentage" slider (0-100%)
+- [ ] Show explanation text for each setting
+
+#### UI Updates - Budget Display
+- [ ] Calculate and show available amount
+  - [ ] Formula: limit + previous_rollover - spent
+- [ ] Add alert badge/indicator
+  - [ ] Green: < 75%
+  - [ ] Yellow: 75-90%
+  - [ ] Orange: 90-100%
+  - [ ] Red: 100-110%
+  - [ ] Dark Red: > 110%
+- [ ] Show rollover amount if > 0
+  - [ ] "+ $50 from last month"
+- [ ] Add warning text at threshold
+  - [ ] "You've used 90% of your budget"
+  - [ ] "You're $20 over budget"
+
+#### UI Updates - Dashboard
+- [ ] Show budgets at risk (≥ alert threshold)
+- [ ] Color-code budget widgets
+- [ ] Add "At Risk" section
+- [ ] Sort by percentage used
+
+#### Notification System (Future Enhancement)
+- [ ] Add push notification preferences
+- [ ] Send notification at threshold
+- [ ] Send notification when over budget
+- [ ] Send notification for large transactions
+
+#### Testing
+- [ ] Test budget with no rollover
+- [ ] Test budget with rollover enabled
+- [ ] Test budget at 50% (green)
+- [ ] Test budget at 80% (yellow)
+- [ ] Test budget at 95% (orange)
+- [ ] Test budget at 105% (red)
+- [ ] Test rollover calculation at month end
+- [ ] Test alert threshold at custom levels
+- [ ] Test partial rollover (50%)
+
+---
+
+### **Feature 0.6: Retirement Planning Calculator** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** High | **Time:** 5-6 hours
+
+#### Database Setup
+- [ ] Create `retirement_plans` table
+  ```sql
+  - id, user_id, name
+  - current_age, current_savings
+  - retirement_age, life_expectancy, desired_annual_income
+  - annual_contribution, employer_match_percentage
+  - expected_return_rate, inflation_rate
+  - social_security_annual, pension_annual
+  - retirement_savings_needed, projected_savings
+  - monthly_contribution_needed, success_probability
+  - created_at, updated_at
+  ```
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### Calculation Engine
+- [ ] Create helper: calculateFutureValue(principal, rate, years)
+- [ ] Create helper: calculateAnnuityFutureValue(payment, rate, periods)
+- [ ] Create helper: calculateRequiredSavings(annual_income)
+  - [ ] Use 25x rule (4% withdrawal rate)
+- [ ] Create helper: calculateMonthlyContribution(target, current, years, rate)
+- [ ] Create function: runRetirementCalculation(plan_id)
+  - [ ] Calculate years to retirement
+  - [ ] Calculate FV of current savings
+  - [ ] Calculate FV of contributions
+  - [ ] Calculate total projected savings
+  - [ ] Calculate required savings
+  - [ ] Calculate monthly contribution needed
+  - [ ] Compare projected vs required
+- [ ] Create function: runMonteCarloSimulation(plan_id, runs = 1000)
+  - [ ] Simulate market volatility
+  - [ ] Calculate success rate
+  - [ ] Return probability distribution
+
+#### Retirement Planner UI - List Screen
+- [ ] Create "Retirement Planning" screen
+- [ ] List all retirement plans
+- [ ] Show plan summary card
+  - [ ] Plan name
+  - [ ] Years to retirement
+  - [ ] Success probability
+  - [ ] Monthly contribution needed
+  - [ ] Progress indicator
+- [ ] Add "Create Plan" button
+- [ ] Add edit/delete actions
+
+#### Retirement Planner UI - Plan Form
+- [ ] Create "Add/Edit Plan" modal
+- [ ] Section 1: Current Situation
+  - [ ] Current age input
+  - [ ] Current savings input
+  - [ ] Annual contribution input
+  - [ ] Employer match percentage
+- [ ] Section 2: Retirement Goals
+  - [ ] Retirement age input
+  - [ ] Life expectancy input (default 90)
+  - [ ] Desired annual income input
+- [ ] Section 3: Assumptions
+  - [ ] Expected return rate slider (1-15%, default 7%)
+  - [ ] Inflation rate slider (0-10%, default 3%)
+  - [ ] Social Security annual estimate
+  - [ ] Pension annual estimate
+- [ ] Save button
+- [ ] Show live preview of results as inputs change
+
+#### Retirement Planner UI - Results Dashboard
+- [ ] Create "Plan Details" screen
+- [ ] Hero section
+  - [ ] Success probability gauge (large)
+  - [ ] Color-coded (green >80%, yellow 60-80%, red <60%)
+  - [ ] Main message: "On track" or "Needs adjustment"
+- [ ] Key Metrics Cards
+  - [ ] Required Savings (calculated)
+  - [ ] Projected Savings (calculated)
+  - [ ] Gap/Surplus
+  - [ ] Monthly Contribution Needed
+- [ ] Growth Chart
+  - [ ] Line chart showing savings growth over time
+  - [ ] Current trajectory
+  - [ ] Target line
+  - [ ] Retirement age marker
+- [ ] What-If Scenarios Section
+  - [ ] Sliders to adjust inputs
+  - [ ] See real-time impact on success rate
+  - [ ] Save as new scenario
+- [ ] Action Plan
+  - [ ] Specific recommendations
+  - [ ] "Increase monthly contribution to $X"
+  - [ ] "Delay retirement by X years"
+  - [ ] "Reduce expenses in retirement by $X"
+
+#### Testing
+- [ ] Test plan creation
+- [ ] Test calculation accuracy
+  - [ ] Verify FV formulas
+  - [ ] Verify required savings (25x rule)
+  - [ ] Verify monthly contribution calculation
+- [ ] Test different scenarios
+  - [ ] Already on track (success rate 100%)
+  - [ ] Need to save more (success rate 60%)
+  - [ ] Impossible goal (success rate <20%)
+- [ ] Test edge cases
+  - [ ] Very young (age 20)
+  - [ ] Near retirement (age 60)
+  - [ ] Different return rates
+  - [ ] Different inflation rates
+- [ ] Test Monte Carlo simulation
+  - [ ] Runs complete
+  - [ ] Success rate reasonable
+
+---
+
+### **Feature 0.7: Long-term Cash Flow Forecasting** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** High | **Time:** 5-6 hours
+
+#### Database Setup
+- [ ] Create `forecast_scenarios` table
+  ```sql
+  - id, user_id, name, years
+  - current_annual_income, income_growth_rate
+  - current_annual_expenses, expense_growth_rate
+  - current_investment_balance, annual_investment_return
+  - major_purchases (jsonb array)
+  - income_events (jsonb array)
+  - created_at
+  ```
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### Forecasting Engine
+- [ ] Create function: calculateForecast(scenario_id)
+  - [ ] Get scenario parameters
+  - [ ] Initialize starting balances
+  - [ ] Loop through each month/year
+    - [ ] Add income with growth
+    - [ ] Subtract expenses with inflation
+    - [ ] Apply investment returns
+    - [ ] Process one-time events
+    - [ ] Store balance
+  - [ ] Return month-by-month projection
+- [ ] Create helper: applyCompoundGrowth(amount, rate, periods)
+- [ ] Create helper: applyOneTimeEvents(events, current_period)
+- [ ] Optimize for performance (cache results)
+
+#### Forecast UI - Scenario List
+- [ ] Create "Cash Flow Forecast" screen
+- [ ] List saved scenarios
+- [ ] Show scenario summary cards
+  - [ ] Name and years
+  - [ ] Final projected balance
+  - [ ] Key events
+- [ ] Add "New Forecast" button
+- [ ] Add edit/delete actions
+
+#### Forecast UI - Input Form
+- [ ] Create "Create Forecast" screen
+- [ ] Section 1: Time Frame
+  - [ ] Years selector (1, 5, 10, 20, 30)
+- [ ] Section 2: Income
+  - [ ] Current annual income input
+  - [ ] Annual income growth rate slider (0-10%, default 3%)
+- [ ] Section 3: Expenses
+  - [ ] Current annual expenses input
+  - [ ] Annual expense growth rate slider (0-10%, default 2%)
+- [ ] Section 4: Investments
+  - [ ] Current investment balance input
+  - [ ] Annual return rate slider (0-15%, default 7%)
+- [ ] Section 5: Major Events
+  - [ ] Add event button
+  - [ ] Event form:
+    - [ ] Year picker
+    - [ ] Type (purchase / income)
+    - [ ] Amount input
+    - [ ] Name input
+  - [ ] Event list with delete
+- [ ] Calculate button
+- [ ] Save scenario button
+
+#### Forecast UI - Results Dashboard
+- [ ] Create "Forecast Results" screen
+- [ ] Main Chart
+  - [ ] Line chart of projected balance over time
+  - [ ] X-axis: years
+  - [ ] Y-axis: balance
+  - [ ] Event markers on timeline
+  - [ ] Break-even points highlighted
+  - [ ] Color coding (positive green, negative red)
+- [ ] Summary Cards
+  - [ ] Starting balance
+  - [ ] Ending balance
+  - [ ] Total income (projected)
+  - [ ] Total expenses (projected)
+  - [ ] Net change
+- [ ] Event Timeline
+  - [ ] List of major events
+  - [ ] Impact on balance
+  - [ ] Date of event
+- [ ] Stress Test Section
+  - [ ] Run recession scenario (-20% investments, -10% income)
+  - [ ] Run inflation scenario (+5% expenses)
+  - [ ] Show comparison
+- [ ] What-If Adjustments
+  - [ ] Sliders to modify assumptions
+  - [ ] Real-time chart update
+  - [ ] Save adjusted scenario
+
+#### Integration with Other Features
+- [ ] Pre-fill income from transaction history
+- [ ] Pre-fill expenses from budget data
+- [ ] Pre-fill investments from portfolio balance
+- [ ] Link forecast to retirement plan
+
+#### Testing
+- [ ] Test basic forecast (10 years)
+- [ ] Test with income growth
+- [ ] Test with expense inflation
+- [ ] Test with investment returns
+- [ ] Test with one-time purchase
+- [ ] Test with one-time income (inheritance)
+- [ ] Test 30-year projection
+- [ ] Test break-even identification
+- [ ] Test stress scenarios
+- [ ] Test calculation accuracy
+
+---
+
+### **Feature 0.8: Debt Payoff Planner** ⭐⭐⭐
+**Priority:** P0 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `debts` table
+  ```sql
+  - id, user_id, name, type
+  - current_balance, interest_rate, minimum_payment
+  - due_date, account_id
+  - created_at, updated_at
+  ```
+- [ ] Create `debt_payoff_plans` table
+  ```sql
+  - id, user_id, name, strategy
+  - extra_monthly_payment, target_payoff_date
+  - total_interest_paid, payoff_date, months_to_payoff
+  - created_at
+  ```
+- [ ] Create `debt_payoff_order` table
+  ```sql
+  - id, plan_id, debt_id, order_index
+  - UNIQUE(plan_id, debt_id)
+  ```
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### Debt Payoff Strategies
+- [ ] Implement Avalanche Strategy
+  - [ ] Sort debts by interest rate (highest first)
+  - [ ] Pay minimums on all
+  - [ ] Apply extra payment to highest rate
+  - [ ] Recalculate when debt paid off
+- [ ] Implement Snowball Strategy
+  - [ ] Sort debts by balance (smallest first)
+  - [ ] Pay minimums on all
+  - [ ] Apply extra payment to smallest balance
+  - [ ] Recalculate when debt paid off
+- [ ] Implement Custom Strategy
+  - [ ] User-defined order
+  - [ ] Manual prioritization
+
+#### Calculation Engine
+- [ ] Create function: calculateMonthlyInterest(balance, annual_rate)
+- [ ] Create function: applyPayment(balance, payment, interest)
+- [ ] Create function: simulatePayoffPlan(plan_id)
+  - [ ] For each month:
+    - [ ] Apply interest to all debts
+    - [ ] Apply minimum payments
+    - [ ] Apply extra payment per strategy
+    - [ ] Check if any debt paid off
+    - [ ] Continue until all paid
+  - [ ] Return: payoff schedule, total interest, payoff date
+- [ ] Create function: compareStrategies(debts, extra_payment)
+  - [ ] Run avalanche simulation
+  - [ ] Run snowball simulation
+  - [ ] Compare results
+  - [ ] Return recommendations
+
+#### Debt Manager UI - List Screen
+- [ ] Create "Debt Management" screen
+- [ ] List all debts
+- [ ] Show debt cards
+  - [ ] Debt name and type
+  - [ ] Current balance
+  - [ ] Interest rate
+  - [ ] Minimum payment
+  - [ ] Progress bar
+- [ ] Show total debt amount
+- [ ] Show weighted average interest rate
+- [ ] Add "Add Debt" button
+- [ ] Add "Create Payoff Plan" button
+
+#### Debt Manager UI - Add/Edit Debt
+- [ ] Create debt form modal
+- [ ] Debt name input
+- [ ] Debt type selector
+  - [ ] Credit Card, Student Loan, Personal Loan, Auto Loan, Mortgage, Medical, Other
+- [ ] Current balance input
+- [ ] Interest rate input (%)
+- [ ] Minimum payment input
+- [ ] Due date (day of month)
+- [ ] Link to account (optional)
+- [ ] Save button
+
+#### Debt Payoff Planner UI - Plan Creation
+- [ ] Create "Payoff Plan" screen
+- [ ] Show all debts
+- [ ] Strategy selector
+  - [ ] Avalanche (saves most money)
+  - [ ] Snowball (quick wins)
+  - [ ] Custom (manual order)
+- [ ] Extra monthly payment input
+- [ ] If Custom: drag-to-reorder debts
+- [ ] Calculate button
+- [ ] Save plan button
+
+#### Debt Payoff Planner UI - Results
+- [ ] Create "Payoff Results" screen
+- [ ] Summary Cards
+  - [ ] Total debt
+  - [ ] Total interest to be paid
+  - [ ] Debt-free date
+  - [ ] Months to payoff
+- [ ] Payoff Timeline Chart
+  - [ ] Stacked area chart showing debt balances
+  - [ ] X-axis: months
+  - [ ] Different color per debt
+  - [ ] Milestone markers
+- [ ] Payoff Schedule Table
+  - [ ] Month-by-month breakdown
+  - [ ] Payment per debt
+  - [ ] Interest paid
+  - [ ] Remaining balance
+  - [ ] Debt payoff dates highlighted
+- [ ] Strategy Comparison
+  - [ ] Show avalanche vs snowball
+  - [ ] Time difference
+  - [ ] Interest difference
+  - [ ] Savings amount
+- [ ] Motivational Milestones
+  - [ ] First debt payoff date
+  - [ ] 50% debt eliminated date
+  - [ ] Debt-free date
+  - [ ] Interest saved vs minimum payments only
+
+#### Testing
+- [ ] Test debt creation
+- [ ] Test avalanche strategy calculation
+- [ ] Test snowball strategy calculation
+- [ ] Test custom strategy
+- [ ] Test payoff schedule generation
+- [ ] Test with various interest rates
+- [ ] Test with different extra payment amounts
+- [ ] Test milestone calculations
+- [ ] Test comparison accuracy
+- [ ] Verify interest calculations
+
+---
+
+### **Feature 0.9: Insurance Policy Tracker** ⭐⭐
+**Priority:** P0 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `insurance_policies` table
+  ```sql
+  - id, user_id, name, type, provider, policy_number
+  - coverage_amount, deductible
+  - premium_amount, premium_frequency
+  - start_date, renewal_date, end_date
+  - beneficiaries (jsonb), cash_value
+  - document_ids (uuid array), notes
+  - is_active, created_at, updated_at
+  ```
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### Insurance Dashboard UI
+- [ ] Create "Insurance" screen
+- [ ] Group policies by type
+  - [ ] Life Insurance section
+  - [ ] Health Insurance section
+  - [ ] Property Insurance section
+  - [ ] Auto Insurance section
+  - [ ] Other section
+- [ ] Show summary cards per type
+  - [ ] Total coverage
+  - [ ] Annual premiums
+  - [ ] Number of policies
+- [ ] Show total annual premium cost
+- [ ] Add "Add Policy" button
+
+#### Policy Card Component
+- [ ] Create policy display card
+- [ ] Show policy icon (based on type)
+- [ ] Show policy name
+- [ ] Show provider
+- [ ] Show coverage amount
+- [ ] Show premium and frequency
+- [ ] Show renewal date
+- [ ] Add status indicator (active/expired)
+- [ ] Add expiring soon badge (< 30 days)
+- [ ] Add view details button
+
+#### Add/Edit Policy Form
+- [ ] Create policy form modal
+- [ ] Section 1: Basic Info
+  - [ ] Policy name input
+  - [ ] Policy type selector
+    - [ ] Life, Health, Dental, Vision, Disability
+    - [ ] Auto, Home, Renters, Umbrella, Pet, Other
+  - [ ] Provider input
+  - [ ] Policy number input
+- [ ] Section 2: Coverage
+  - [ ] Coverage amount input
+  - [ ] Deductible input
+- [ ] Section 3: Cost
+  - [ ] Premium amount input
+  - [ ] Premium frequency selector (monthly, quarterly, annual)
+  - [ ] Auto-calculate annual cost
+- [ ] Section 4: Dates
+  - [ ] Start date picker
+  - [ ] Renewal date picker
+  - [ ] End date picker (optional)
+- [ ] Section 5: Beneficiaries (for life insurance)
+  - [ ] Add beneficiary button
+  - [ ] Beneficiary form:
+    - [ ] Name input
+    - [ ] Relationship input
+    - [ ] Percentage input
+  - [ ] Validate total = 100%
+- [ ] Section 6: Additional Info
+  - [ ] Cash value input (for whole life)
+  - [ ] Notes textarea
+  - [ ] Attach documents button
+- [ ] Save button
+
+#### Policy Details View
+- [ ] Create policy details screen
+- [ ] Show all policy information
+- [ ] Show beneficiaries list
+- [ ] Show payment history (linked transactions)
+- [ ] Show attached documents
+- [ ] Coverage breakdown
+- [ ] Edit/delete actions
+- [ ] Mark as inactive button
+
+#### Insurance Insights
+- [ ] Calculate total annual premiums
+- [ ] Calculate total coverage
+- [ ] Identify gaps (underinsured)
+  - [ ] Life insurance rule: 10-12x income
+  - [ ] Auto liability: $250K+ recommended
+  - [ ] Home: replacement cost
+- [ ] Show renewal calendar
+- [ ] Expiring soon alerts
+
+#### Testing
+- [ ] Test adding life insurance policy
+- [ ] Test adding auto insurance policy
+- [ ] Test adding home insurance policy
+- [ ] Test premium calculations (monthly, quarterly, annual)
+- [ ] Test beneficiary percentages validation
+- [ ] Test renewal date reminders
+- [ ] Test document attachment
+- [ ] Test gap analysis
+- [ ] Test policy expiration detection
+
+---
+
+## 🟡 **PHASE 1: DIFFERENTIATORS (Priority P1)**
+**Timeline:** 12-16 weeks | **Effort:** 27-34 hours
+**Goal:** Features that make WealthFlow unique and competitive
+
+---
+
+### **Feature 1.1: Estate Planning Vault** ⭐⭐
+**Priority:** P1 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `estate_documents` table
+- [ ] Create `beneficiaries` table
+- [ ] Add RLS policies
+- [ ] Add migration file
+
+#### UI Implementation
+- [ ] Create Estate Planning screen
+- [ ] Document checklist (will, trust, POA, etc.)
+- [ ] Beneficiary management
+- [ ] Document upload/storage
+- [ ] Lawyer contact information
+- [ ] Review reminders
+
+#### Testing
+- [ ] Test document upload
+- [ ] Test beneficiary management
+- [ ] Test RLS security
+
+---
+
+### **Feature 1.2: Beneficiary Access (Dead Man's Switch)** ⭐⭐
+**Priority:** P1 | **Complexity:** High | **Time:** 5-6 hours
+
+#### Database Setup
+- [ ] Create `beneficiary_access` table
+- [ ] Add life beat tracking
+- [ ] Add RLS policies
+
+#### Backend
+- [ ] Create Edge Function for life beat checks
+- [ ] Implement trigger logic
+- [ ] Create grace period handling
+- [ ] Set up notification system
+
+#### UI Implementation
+- [ ] Beneficiary invitation system
+- [ ] Life beat check-in interface
+- [ ] Status dashboard
+- [ ] Beneficiary portal (read-only)
+
+#### Testing
+- [ ] Test check-in functionality
+- [ ] Test trigger sequence
+- [ ] Test beneficiary access
+
+---
+
+### **Feature 1.3: Bank Integration (Plaid)** ⭐⭐⭐
+**Priority:** P1 | **Complexity:** Very High | **Time:** 8-10 hours
+
+**Note:** Requires Plaid subscription ($0-1,500/month)
+
+#### Setup
+- [ ] Create Plaid account
+- [ ] Get API keys (sandbox & production)
+- [ ] Store in Supabase secrets
+
+#### Database Setup
+- [ ] Create `bank_connections` table
+- [ ] Create `bank_accounts` table
+- [ ] Add RLS policies
+
+#### Edge Functions
+- [ ] Create `plaid-link` function
+- [ ] Create `plaid-sync` function
+- [ ] Create `plaid-webhook` handler
+
+#### UI Implementation
+- [ ] Plaid Link component (WebView)
+- [ ] Connected accounts list
+- [ ] Sync controls
+- [ ] Transaction review interface
+- [ ] Auto-categorization
+
+#### Testing
+- [ ] Test connection in sandbox
+- [ ] Test transaction import
+- [ ] Test duplicate detection
+- [ ] Test auto-categorization
+
+---
+
+### **Feature 1.4: Bill Management & Reminders** ⭐⭐
+**Priority:** P1 | **Complexity:** Medium | **Time:** 2-3 hours
+
+#### Database Setup
+- [ ] Create `bills` table
+- [ ] Create `bill_payments` table
+- [ ] Add RLS policies
+
+#### Backend
+- [ ] Create Edge Function for reminders
+- [ ] Implement notification system
+
+#### UI Implementation
+- [ ] Bills list screen
+- [ ] Bill calendar view
+- [ ] Add/edit bill form
+- [ ] Payment tracking
+- [ ] Reminder settings
+
+#### Testing
+- [ ] Test bill creation
+- [ ] Test reminder notifications
+- [ ] Test payment tracking
+
+---
+
+### **Feature 1.5: Tax Center** ⭐⭐
+**Priority:** P1 | **Complexity:** High | **Time:** 4-5 hours
+
+#### Database Setup
+- [ ] Add tax fields to categories
+- [ ] Create `tax_documents` table
+- [ ] Add RLS policies
+
+#### UI Implementation
+- [ ] Tax dashboard
+- [ ] Year selector
+- [ ] Income summary
+- [ ] Deductible expenses report
+- [ ] Investment income tracking
+- [ ] CSV/PDF export
+
+#### Testing
+- [ ] Test tax calculations
+- [ ] Test report generation
+- [ ] Test export functionality
+
+---
+
+### **Feature 1.6: Collaboration & Sharing** ⭐⭐
+**Priority:** P1 | **Complexity:** High | **Time:** 5-6 hours
+
+#### Database Setup
+- [ ] Create `shared_access` table
+- [ ] Create `activity_feed` table
+- [ ] Update RLS policies for sharing
+
+#### UI Implementation
+- [ ] Sharing invitation system
+- [ ] Permission management
+- [ ] Activity feed
+- [ ] Collaboration dashboard
+
+#### Backend
+- [ ] Real-time updates (Supabase Realtime)
+- [ ] Permission enforcement
+- [ ] Activity logging
+
+#### Testing
+- [ ] Test invitations
+- [ ] Test permissions
+- [ ] Test activity feed
+- [ ] Test real-time updates
+
+---
+
+## 🟢 **PHASE 2: ADVANCED FEATURES (Priority P2)**
+**Timeline:** 8-12 weeks | **Effort:** 30-40 hours
+**Goal:** Power user features and advanced analytics
+
+---
+
+### **Feature 2.1: Compound Interest Calculator** ⭐⭐
+**Priority:** P2 | **Complexity:** Medium | **Time:** 2-3 hours
+
+#### Implementation
+- [ ] Create calculator component
+- [ ] Input form (principal, rate, time, contributions)
+- [ ] Calculation engine
+- [ ] Growth chart visualization
+- [ ] Integration with goals
+- [ ] "Required contribution" calculator
+
+#### Testing
+- [ ] Test calculations accuracy
+- [ ] Test various scenarios
+- [ ] Test chart rendering
+
+---
+
+### **Feature 2.2: Asset Allocation & Portfolio Analysis** ⭐⭐
+**Priority:** P2 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `asset_allocations` table
+- [ ] Add target allocation fields
+
+#### Implementation
+- [ ] Portfolio metrics calculation
+- [ ] Current vs target comparison
+- [ ] Rebalancing recommendations
+- [ ] Risk score calculation
+- [ ] Diversification metrics
+
+#### UI
+- [ ] Asset allocation pie chart
+- [ ] Target vs actual comparison
+- [ ] Rebalancing calculator
+- [ ] Risk dashboard
+
+#### Testing
+- [ ] Test allocation calculations
+- [ ] Test rebalancing logic
+- [ ] Test risk scoring
+
+---
+
+### **Feature 2.3: Annuity & Retirement Policy Management** ⭐
+**Priority:** P2 | **Complexity:** Medium | **Time:** 2-3 hours
+
+#### Database Setup
+- [ ] Create `annuities` table
+- [ ] Add RLS policies
+
+#### UI Implementation
+- [ ] Annuity tracker list
+- [ ] Add/edit annuity form
+- [ ] Payout schedule
+- [ ] Growth projection
+- [ ] Surrender value calculator
+
+#### Testing
+- [ ] Test annuity tracking
+- [ ] Test payout calculations
+- [ ] Test value projections
+
+---
+
+### **Feature 2.4: Subscription Detector** ⭐
+**Priority:** P2 | **Complexity:** Medium | **Time:** 2-3 hours
+
+#### Database Setup
+- [ ] Create `subscriptions` table
+
+#### Implementation
+- [ ] Recurring pattern detection algorithm
+- [ ] Common merchant identification
+- [ ] Unused subscription detection
+
+#### UI
+- [ ] Subscriptions dashboard
+- [ ] Monthly/annual cost summary
+- [ ] Unused subscriptions alert
+- [ ] Cancel links
+
+#### Testing
+- [ ] Test pattern detection
+- [ ] Test subscription identification
+- [ ] Test cost calculations
+
+---
+
+## 🟣 **PHASE 3: REAL ESTATE & ALTERNATIVES (Priority P3)**
+**Timeline:** 8-10 weeks | **Effort:** 20-25 hours
+**Goal:** Complete asset tracking for high-net-worth users
+
+---
+
+### **Feature 3.1: Real Estate Tracker** ⭐⭐
+**Priority:** P3 | **Complexity:** Medium | **Time:** 3-4 hours
+
+#### Database Setup
+- [ ] Create `real_estate` table
+- [ ] Create `property_expenses` table
+
+#### UI Implementation
+- [ ] Real estate dashboard
+- [ ] Property list
+- [ ] Add/edit property form
+- [ ] Expense tracking
+- [ ] Equity calculation
+- [ ] ROI for rentals
+- [ ] Zillow integration (optional)
+
+#### Testing
+- [ ] Test property tracking
+- [ ] Test expense categorization
+- [ ] Test ROI calculations
+
+---
+
+### **Feature 3.2: Vehicle & Collectible Tracker** ⭐
+**Priority:** P3 | **Complexity:** Low | **Time:** 2 hours
+
+#### Database Setup
+- [ ] Create `physical_assets` table
+
+#### UI Implementation
+- [ ] Physical assets list
+- [ ] Add/edit asset form
+- [ ] Depreciation tracking
+- [ ] Value updates
+
+#### Testing
+- [ ] Test asset tracking
+- [ ] Test depreciation calculations
+
+---
+
+### **Feature 3.3: NFT & Crypto Wallet Tracking** ⭐
+**Priority:** P3 | **Complexity:** High | **Time:** 4-5 hours
+
+#### Database Setup
+- [ ] Create `crypto_wallets` table
+- [ ] Create `crypto_holdings` table
+- [ ] Create `nfts` table
+
+#### Backend
+- [ ] Blockchain API integration
+- [ ] Price fetching (CoinGecko)
+- [ ] NFT metadata (OpenSea)
+- [ ] Wallet balance updates
+
+#### UI Implementation
+- [ ] Crypto dashboard
+- [ ] Wallet management
+- [ ] Holdings display
+- [ ] NFT gallery
+- [ ] Price alerts
+
+#### Testing
+- [ ] Test wallet connection
+- [ ] Test balance updates
+- [ ] Test NFT display
+- [ ] Test price tracking
+
+---
+
+## ⚡ **PHASE 4: OPTIMIZATIONS (Ongoing)**
+**Timeline:** Ongoing | **Effort:** Variable
+**Goal:** Performance, polish, and user experience
+
+---
+
+### **Performance Optimization**
+- [ ] Database query optimization
+- [ ] Add missing indexes
+- [ ] Implement caching strategies
+- [ ] Image optimization
+- [ ] Lazy loading
+- [ ] Code splitting
+
+### **Advanced Reports**
+- [ ] Custom date ranges
+- [ ] Comparison reports (MoM, YoY)
+- [ ] Multiple export formats (PDF, CSV, Excel)
+- [ ] Scheduled email reports
+- [ ] AI insights & suggestions
+
+### **Mobile Polish**
+- [ ] Haptic feedback
+- [ ] Smooth animations
+- [ ] Dark mode
+- [ ] Widget support
+- [ ] Quick actions
+- [ ] Siri shortcuts
+
+### **Onboarding**
+- [ ] Interactive tutorial
+- [ ] Sample data for demo
+- [ ] Video guides
+- [ ] FAQ section
+- [ ] Contextual tooltips
+- [ ] Progress tracking
+
+---
+
+## 📊 **PROGRESS TRACKING**
+
+### **Completion Summary**
+- **Phase 0 (Critical):** 0/9 features (0%)
+- **Phase 1 (Differentiators):** 0/6 features (0%)
+- **Phase 2 (Advanced):** 0/4 features (0%)
+- **Phase 3 (Alternatives):** 0/3 features (0%)
+- **Phase 4 (Optimization):** 0/4 categories (0%)
+
+**Total Overall:** 0/26 major features (0%)
+
+### **Time Investment**
+- **Phase 0:** 0/45 hours
+- **Phase 1:** 0/34 hours
+- **Phase 2:** 0/13 hours
+- **Phase 3:** 0/11 hours
+- **Total:** 0/103 hours of core development
+
+---
+
+## 🎯 **IMMEDIATE NEXT STEPS**
+
+### **Week 1: Split & Recurring Transactions**
+1. Start with Split Transactions (already have DB!)
+2. Build Recurring Transactions system
+3. Test both features end-to-end
+
+### **Week 2: Documents & Currency**
+4. Implement Document Vault
+5. Add Multi-Currency support
+6. Test with real-world scenarios
+
+### **Week 3: Budget Enhancements**
+7. Add Budget Rollover
+8. Add Budget Alerts
+9. Polish budget UI
+
+### **Week 4-6: Retirement & Forecasting**
+10. Build Retirement Calculator
+11. Build Cash Flow Forecasting
+12. Test projections accuracy
+
+### **Week 7-8: Debt & Insurance**
+13. Build Debt Payoff Planner
+14. Build Insurance Tracker
+15. Test complete workflow
+
+---
+
+## 📝 **NOTES FOR TRACKING**
+
+### **How to Use This Checklist:**
+1. **Copy to your task tracker** (Notion, Trello, Linear, etc.)
+2. **Check off items** as you complete them
+3. **Update "Completion Summary"** after each feature
+4. **Track time** to improve estimates
+5. **Add notes** for blockers or issues
+6. **Review weekly** to stay on track
+
+### **Priority Legend:**
+- **P0** = Must have, blocking launch
+- **P1** = Should have, competitive advantage
+- **P2** = Nice to have, power user features
+- **P3** = Could have, future enhancements
+
+### **Complexity Legend:**
+- **Low** = 1-2 hours, straightforward
+- **Medium** = 2-4 hours, requires thought
+- **High** = 4-6 hours, complex logic
+- **Very High** = 8+ hours, multiple systems
+
+---
+
+## 🚀 **SUCCESS CRITERIA**
+
+### **Phase 0 Complete When:**
+- [ ] All 9 critical features implemented
+- [ ] All features tested and working
+- [ ] No major bugs
+- [ ] Feature parity with YNAB/Quicken
+- [ ] User guide updated
+
+### **Phase 1 Complete When:**
+- [ ] Estate planning implemented
+- [ ] Bank integration working (if pursuing)
+- [ ] Tax center functional
+- [ ] Sharing/collaboration tested
+- [ ] Differentiation from competitors clear
+
+### **Phase 2-3 Complete When:**
+- [ ] All advanced features working
+- [ ] Real estate tracking functional
+- [ ] Crypto/NFT tracking working
+- [ ] Power user needs met
+
+### **Ready for Launch When:**
+- [ ] Phase 0 100% complete
+- [ ] Phase 1 at least 50% complete
+- [ ] No critical bugs
+- [ ] Performance acceptable
+- [ ] User testing positive
+- [ ] Documentation complete
+
+---
+
+**Remember:** This is a marathon, not a sprint. Focus on quality over speed. Each feature should be polished and tested before moving to the next.
+
+**Estimated Timeline to MVP:** 8-12 weeks (Phase 0 complete)
+**Estimated Timeline to Full Product:** 24-30 weeks (All phases)
+
+Let's build the best personal finance app! 🎉
